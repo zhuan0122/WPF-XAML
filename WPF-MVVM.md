@@ -18,7 +18,7 @@
 * Difference between .NET core and .NET framework 
 * XAML 
   *  assign sender AS button 
-  *  create event handler for buttons both in xaml file and in .xmal.cs file 
+  *  create event handler for buttons both in xaml file and in .xmal.cs file. Code in .xmal.cs and .xmal are VIEW codes.
 
 
 
@@ -27,14 +27,14 @@
 ** Data binding is the key** 
 
 ** Structure of of the MVVM pattern 
-    * Model <Sends notifications> to VIEWMODEL for any changes did in MODEL 
-    * VIEWMODEL <Updates> to MODEL 
+    * Model <Sends notifications> to VIEWMODEL for any changes EVENTS did in MODEL > 
+    * VIEWMODEL <Updates> to MODEL: UPDATE MODEL OR RETRIVE MODEL
     * VIEWMODEL <Sends notifications> To VIEW about changes from MODEL. VIEWMODEL is the intermediary between MODEL and VIEW(layout/xmal file)
     * VIEW <Data binding> TO VIEWMODEL  how??? how to bind data grid or any interface to the property in database? 
   
 ** MODEL 
 -- it is about the data so it is data model 
--- contains business and validation logic so it is where we implement our classes with properties and interface that are gonna to be used in the 
+-- contains business and validation logic(SERVICE LAYER + DATA LAYER) so it is where we implement our classes with properties and interface that are gonna to be used in the 
 VIEWMODEL 
 
 ** VIEW 
@@ -67,7 +67,7 @@ In ST2 project, Businness layer is our Model of MVVM patten.!
 -- the view model is inside the MainWindow.xaml.cs in the form of code behind for view or layout in xx.xaml file. 
 -- define interaction between the view and the code behind in the form of events.
 
--- if our goal is to get rid of these methods inside the event handler in xmal.cs file then we need to find another way to handle or react to the event like buttonClick. 
+-- if our goal is to get rid of these methods inside the event handler in \xmal.cs file then we need to find another way to handle or react to the event like buttonClick. 
 
 --most imporatantly, all of the prediction and all of the calls and the communication between the WPF application and the service is going to be hanppen from the view model. what is service do in WPF? 
 
@@ -86,9 +86,9 @@ in ST2, presentation layer are   VIEW + VIEW MODEL
 VIEW shows what we are gonna to display to the user and for the codebehind if we have them we should get rid of them here.
 -- for how to get rid of the code behind like eventHandler menthods inside the .xmal.cs, we could replace event handlers with command. by using command we could call methods we need directly from VIEW MODEL. So we achieve to implement view logic in VIEW MODEL, VIEW will use command to call them not from VIEW but from VIEW MODEL. 
 
--- but I do not think ST2 use command to replace event handler.???
+-- but I do not think ST2 use command to replace event handler.??? // we have both 
 
-Istead of call methos to return data in our view .xmal.cs file we could use context biding database into our layout. so each ilement in .xmal, like grid, table, LsitView they all have a dataContext, how does a context to be applied all the way to the window is that the window has also added a context. 
+Istead of call methos to return data in our view .xmal.cs file we could use context biding database into our layout. so each element in .xmal, like grid, table, LsitView they all have a dataContext, how does a context to be applied all the way to the window is that the window has also added a context. 
 
 so this means if you add a context in the window block then this context will be the same all for children under this window. but you also could add context only to childern itself. then we could get information from the data context. so trhough the power of binding, we could get information from source or ata context directly in xaml instead of using code behind in .xaml.cs file- 
 
@@ -104,7 +104,7 @@ so until now we have created adnd isolated contents in different folder. like cl
 now we need to implement the comminucation between these 3 parts. INotifyPropertyChanged interface is gonna to help us knowing when a property value are changed. we start with this one kind of communication among these 3 parts. 
 
 why we need to use this interface? 
-- precisely by implementing this interface is that we will be able to generate events for when these value changes so both the view and the models stay updated. by reacying the events when the value are changed will allow us to update the view, view model and model 
+- precisely by implementing this interface is that we will be able to generate events for when these value changes so both the view and the models stay updated. by reacting the events when the value are changed will allow us to update the view, view model and model 
 - but why we need this automaticaly update???
   
   * when bound together, two properties receive notification
@@ -154,13 +154,12 @@ INnotifyPropertyChanged is quite critical in MVVM pattern to get clean code behi
         {
           // if this property is changed, it will be changed here from c# side. 
           query = value; 
-          OnPropertyChanged("Query") 
+          OnPropertyChanged("Query") //event 
           // passing property name that is changing. this will trigger the event and now this event is now going to update anyone who subscribes to it. we could make our element from UI like text box to subscribe this event. then everytime textbox is changed then this Query will get updated or this Query is updated to query data with a new key then our textbox will be udapted from UI
           but here we just create event and add trigger methods. we need to bind xmal to this property and then property change will invoke event.
         }
 
       }
-
 
       public event PropertyChangedEventHandler PropertyChanged
 
@@ -426,17 +425,189 @@ run -- get error, it says the value in Temperature.Metric.Value is a string
 
 * How it works? 
     * similar, it is a class impelmented inside our view model like other interface we have leanred above like 
-      OberservableCollection<T>, INotifyPropertyChanged, and so on
+      OberservableCollection<T>, INotifyPropertyChanged, and so on. But when we say it is inside our viewmodel. 
+      we mean it is under this ViewModel folder and we could access this class whereever inside this folder.
 
     * we are gonna have two methods inside: 
       * Convert() -- allow us to cast Model to View 
       * ConvertBack() -- allow us to cast View to Model
   
     * small example to explain: 
-      -- we have a class in the model, it has one property called DateTime which is in datetime format. but we do not want to display this complicated redunant format to the user. we want to let the user see just two hours ago. In we could evaluate this datatime in the Convert method. for example if the date is less than one day old, we are going to return our time as hours.if it is more than one day old , then we say yesterday
+      -- we have a class in the model, it has one property called DateTime which is in datetime format. but we do not want to display this complicated redunant format to the   user. we want to let the user see just two hours ago. In we could evaluate this datatime in the Convert method. for example if the date is less than one day old, we are going to return our time as hours.if it is more than one day old , then we say yesterday
 
 * Implemeent IValueConvert interface 
-    
+  
+  we have one property in the CurrentConditions class: HasPercipitation 
+  which is a bool. so we want to visulize this in UI as ... 
+  we just add another textbox inside the grid where we show Weather in UI. well we do not want to simply just show True or false to user in UI. so we could reformat this to be more descriptive or presentable in UI.
+
+  <Grid Grid.Row="1"
+              Background="#4392f1"
+              DataContext="{Binding CurrrentConditions}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Margin="0,10">
+                <TextBlock DataContext="{StaticResource vm}"
+                           Text="{Binding SelectedCity.LocalizedName}"
+                           Foreground="#f4f4f8"
+                           FontSize="20"
+                           Margin="20,0"/>
+                <TextBlock Text="{Binding WeatherText}"
+                           Foreground="#f4f4f8"
+                           FontSize="18"
+                           Margin="20,0"/>
+                <TextBlock Text="{Binding HasPrecipitation, Converter={StaticResource boolToRain}}"
+                           Foreground="#f4f4f8"
+                           FontSize="16"
+                           Margin="20,0"/>
+            </StackPanel>
+            <TextBlock Grid.Column="1"
+                       VerticalAlignment="Center"
+                       Text="{Binding Temperature.Metric.Value, StringFormat={}{0}°C}"
+                       Foreground="#f4f4f8"
+                       FontSize="30"
+                       Margin="20,0"/>
+        </Grid>
+
+we create a folder called ValueConverter folder inside the ViewModel folder. Then implement code: 
+
+public class BoolToRainConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool isRaining = (bool)value; -- cast it to boolean type 
+
+            if (isRaining)
+                return "Currently raining"; 
+
+            return "Currently not raining";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            string isRaining = (string)value;
+            if (isRaining != null)
+            {
+                if (isRaining == "Currently raining")
+                    return true;
+            }
+            return false;
+        }
+    }
+
+-- in covert method, we could evaluate lots of things. lIKE Culture is useful for currecny for specific formatting. but in our case, we do not need it at this moment. 
+so we take object that we get and display it to user into whatwever we want to show.
+
+-- in our case User will never be able to set from UI that is raining or not raining. But in other case. we could do ConvertBack like changes from view to the Model.
+
+-- we need to bind this BoolToRainConverter to our view in xaml file: 
+  -- since we create a folder to contain this ConverValue class so we need to add it as namespace in xaml. since it is not in WeatherVM.cs. so it is inside another folder, we cannot access it without adding its path as namepsace in xlms. then added it in Resources block as well
+
+  <Window.Resources>
+        <vm:WeatherVM x:Key="vm"/>
+        <converters:BoolToRainConverter x:Key="boolToRain"/>
+    </Window.Resources> 
+
+  -- then we could bind to boolToRain's property. 
+
+  <TextBlock Text="{Binding HasPrecipitation, Converter={StaticResource boolToRain}}" -- The Converter will grab what we get from HasPrecipitation and evaluate it there- 
+
+
+### Custom User Control 
+ 
+ we know from window, we could add textbox, button, listview, and so on, these controls are from window in xmal. these controls if we want to use them or display them in different UI location then we need to to add this control code over and over again in xmal. so for more efficiently we could use custom user control to do reduce our duplicate codes. 
+
+ so in this part we are gonna learn how to build our own custom control just like Textbox, List view and any layout and then we could resue the format whenerver or wherever we need it. we are gonna use these custom user control the same way we use button, textbox before.
+
+ VS provides a User Control template which you could add like a class by right clikcing.  so we name it as classNameControl.xmal then it will create on .xmal.cs automatically along with the .xmal file. this classNameConrol.xmal inherites from UserControl class so it will use heights, width and any common properties from UserCOntrol template.
+
+ if you want to set the textblock in your user control layout to what contents you want. then you need to set name to these blocks and then you could assign values to them in .xmal.cs file. 
+
+ but why you mention we should recude code behind in .xmal.cs file so we remove them to .cs model files and define our property there and then bind them in xaml file. 
+ here in our custom user control, we define layout in xmal file and then add property in its .xaml.cs file with assignment value to Name of blocks in xmal file. then what is the purpose of this ussage? should we just bind property inside model class? 
+ Answer: **For a UC to work with Binding you need to add the Dependency Properties with C#, so I guess the answer is no. But is this what you were referring to?**
+
+ regardless of Dependency properties here we just want to use user control. so in our main window xmal, we do not want to binding properties from contact class over and over again. so we replace these blocks for displaying name of Contact, email of contact... with uc directly:
+
+ Import namesapce xmlns:uc="clr-namespace:DesktopContactsApp.Controls" 
+ <ListView.ItemTemplate>
+                <DataTemplate>
+                    <uc:ContactControl Contact="{Binding}"/> -- still can bound property from itemSource. but when you run build, app is 
+                                                              -- working and throw error on binding here cannot be on a  property. it should be set on a dependency propertity or Dependency Object. so this means in this way when we use User Control as item source and then we have a simple property inside the User COntrol class here it is ContactControl: UserControl(inherites from User Control) then this does not work. so for UC in xmal. we need to bind not on simple property from itemsource but a Dependency properties or dependency object. see next step 
+                </DataTemplate>
+            </ListView.ItemTemplate>
+
+
+####  Create Dependency Property and bind on them 
+  * Transform the Contact property inside ContactControl to be a Dependency Property.
+  
+      public partial class ContactControl : UserControl
+    {
+        private Contact contact;
+
+        public Contact Contact -- change this property to be a Dependency Property
+        {
+            get { return contact; }
+            set
+            {
+                contact = value;
+                nameTextBlock.Text = contact.Name;
+                phoneTextBlock.Text = contact.Phone;
+                emailTextBlock.Text = contact.Email;
+            }
+        }
+
+when you type property in side class we have snippet: prop, propf, propdp + tab then it will show entire template for this property
+
+namespace DesktopContactsApp.Controls
+{
+    /// <summary>
+    /// Interaction logic for ContactControl.xaml
+    /// </summary>
+    public partial class ContactControl : UserControl
+    {
+        public Contact Contact
+        {
+            get { return (Contact)GetValue(ContactProperty); } -- use GetValue method from Contactproperty then cast it as Contact type.
+            set { SetValue(ContactProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Contact.  This enables animation, styling, binding, etc...
+        // here we define ContactProperty as a readonly and static property which is registed as type of ITS oWNERclass which
+        // is ContactControl in this case. as it mentioned this will enabling animation, binding which we need now 
+        // through the propertyMetadata we will be able to define a method that will be excuted when the property changes. // 
+        //PropertyMedatda has 3 arguments, first one is defualt, the second one is the value to initialize or defualt one before the property get changed, this initial value should be set as correct format here is Contact, otherwise, errror will be thrown.so we set it as a new Contact object with New keyword. the third is the callback 
+        //method that will be excuted everytime when property changes which behaves like a event handler. 
+        public static readonly DependencyProperty ContactProperty =
+            DependencyProperty.Register("Contact", typeof(Contact), typeof(ContactControl), new PropertyMetadata(new Contact() { Name = "Name Lastname", Email = "example@domain.com", Phone = "123 1234 1234" }, SetText));
+        
+
+
+        private static void SetText(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ContactControl control = d as ContactControl; -- variable control here has access to all Textblock in ContactControl.xaml 
+                                                          --file. since when we create ContactControl.xmal, it is partial class and all contents inside are created in different class and different files automatically.
+
+            if(control != null)
+            {
+                control.nameTextBlock.Text = (e.NewValue as Contact).Name; -- NewValue is from our EventArgs we have oldValue as well
+                                                                           -- we should cast it AS Contact type so we could have access to properties of Contact. 
+                control.emailTextBlock.Text = (e.NewValue as Contact).Email;
+                control.phoneTextBlock.Text = (e.NewValue as Contact).Phone;
+            }
+        }
+
+        public ContactControl()
+        {
+            InitializeComponent();
+        }
+    }
+}
+
+### Dependency Injection --UnityContainer/prism framework
+
 
 
 
